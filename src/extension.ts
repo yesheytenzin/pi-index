@@ -63,12 +63,12 @@ export default function (pi: ExtensionAPI) {
     },
   }));
 
-  pi.registerCommand("symbols", {
-    description: "Inspect the symbol index (/symbols status) or rebuild it (/symbols rebuild)",
+  pi.registerCommand("index", {
+    description: "Inspect the symbol index (/index status) or rebuild it (/index rebuild)",
     async handler(args, ctx) {
       const action = args.trim() || "status";
       if (action !== "status" && action !== "rebuild") {
-        if (ctx.hasUI) ctx.ui.notify("Usage: /symbols [status|rebuild]", "warning");
+        if (ctx.hasUI) ctx.ui.notify("Usage: /index [status|rebuild]", "warning");
         return;
       }
       try {

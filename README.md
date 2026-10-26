@@ -49,8 +49,8 @@ Both tools reconcile saved files before answering. Results include paths, line n
 
 ## Commands
 
-- `/symbols status` inspects the index.
-- `/symbols rebuild` regenerates it from current files.
+- `/index status` inspects the index.
+- `/index rebuild` regenerates it from current files.
 
 ## Development
 
