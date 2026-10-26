@@ -1,0 +1,5 @@
+--map-TypeScript=+.tsx
+--map-TypeScript=+.mts
+--map-TypeScript=+.cts
+--map-JavaScript=+.cjs
+--map-Terraform=+.hcl

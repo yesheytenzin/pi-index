@@ -1,0 +1,19 @@
+# Solidity: not a built-in Universal Ctags language.
+--langdef=Solidity
+--map-Solidity=+.sol
+--kinddef-Solidity=c,contract,contracts
+--kinddef-Solidity=l,library,libraries
+--kinddef-Solidity=i,interface,interfaces
+--kinddef-Solidity=f,function,functions
+--kinddef-Solidity=m,modifier,modifiers
+--kinddef-Solidity=e,event,events
+--kinddef-Solidity=s,struct,structs
+--kinddef-Solidity=g,enum,enums
+--regex-Solidity=/^[ \t]*contract[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\1/c/{exclusive}
+--regex-Solidity=/^[ \t]*library[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\1/l/{exclusive}
+--regex-Solidity=/^[ \t]*interface[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\1/i/{exclusive}
+--regex-Solidity=/^[ \t]*function[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\1/f/{exclusive}
+--regex-Solidity=/^[ \t]*modifier[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\1/m/{exclusive}
+--regex-Solidity=/^[ \t]*event[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\1/e/{exclusive}
+--regex-Solidity=/^[ \t]*struct[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\1/s/{exclusive}
+--regex-Solidity=/^[ \t]*enum[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\1/g/{exclusive}

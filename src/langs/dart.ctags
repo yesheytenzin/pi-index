@@ -1,0 +1,13 @@
+# Dart / Flutter: not a built-in Universal Ctags language.
+--langdef=Dart
+--map-Dart=+.dart
+--kinddef-Dart=c,class,classes
+--kinddef-Dart=g,enum,enums
+--kinddef-Dart=x,mixin,mixins
+--kinddef-Dart=t,typedef,typedefs
+--kinddef-Dart=f,function,functions
+--regex-Dart=/^[ \t]*(abstract[ \t]+)?class[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\2/c/{exclusive}
+--regex-Dart=/^[ \t]*enum[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\1/g/{exclusive}
+--regex-Dart=/^[ \t]*mixin[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\1/x/{exclusive}
+--regex-Dart=/^[ \t]*typedef[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\1/t/{exclusive}
+--regex-Dart=/^[ \t]*([a-zA-Z_][a-zA-Z0-9_<>,.?]*[ \t]+)+([a-zA-Z_][a-zA-Z0-9_]*)[ \t]*\([^;{]*\)[ \t]*(async[ \t]*)?(\{|=>)/\2/f/{exclusive}

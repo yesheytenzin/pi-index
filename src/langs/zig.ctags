@@ -1,8 +1,4 @@
-# Universal Ctags optlib definition for Zig.
-# Bundled with pi-index and loaded after --options=NONE so Zig is indexed
-# everywhere without reading untrusted project Ctags configuration.
-# Regex-based: it finds definitions, not scopes, and cannot distinguish a
-# struct-level declaration from a function-local one.
+# Zig: Universal Ctags ships no Zig parser.
 --langdef=Zig
 --map-Zig=+.zig
 --kinddef-Zig=f,function,functions

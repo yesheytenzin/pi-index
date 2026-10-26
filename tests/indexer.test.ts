@@ -117,6 +117,28 @@ test('bundled Zig parser indexes definitions Universal Ctags lacks', async t => 
   assert.deepEqual(outline, ['std', 'Mode', 'Point', 'start', 'method', 'it works']);
 });
 
+test('bundled parsers and extension maps cover popular languages Ctags misses', async t => {
+  const f = await fixture(t);
+  const cases: { file: string; content: string; name: string; kind: string }[] = [
+    { file: 'a.swift', content: 'public class Engine {\n    func start() {}\n}\n', name: 'start', kind: 'function' },
+    { file: 'a.dart', content: 'int add(int a, int b) { return a + b; }\n', name: 'add', kind: 'function' },
+    { file: 'a.scala', content: 'object Main {\n  def run(x: Int): Int = x + 1\n}\n', name: 'run', kind: 'method' },
+    { file: 'a.sol', content: 'contract Token {\n    function mint(uint n) public {}\n}\n', name: 'mint', kind: 'function' },
+    { file: 'build.gradle', content: 'class Builder {\n    def build(String name) { return name }\n}\n', name: 'build', kind: 'method' },
+    { file: 'a.svelte', content: '<script>\n  function increment() {}\n</script>\n', name: 'increment', kind: 'function' },
+    { file: 'a.vue', content: '<script setup>\nfunction greet() {}\n</script>\n', name: 'greet', kind: 'function' },
+    { file: 'a.tsx', content: 'export function Page() { return null; }\n', name: 'Page', kind: 'function' },
+    { file: 'a.cjs', content: 'function legacy() {}\nmodule.exports = {};\n', name: 'legacy', kind: 'function' },
+    { file: 'main.hcl', content: 'variable "region" {}\n', name: 'region', kind: 'variable' },
+  ];
+  for (const c of cases) await f.file(c.file, c.content);
+  const index = f.index();
+  for (const c of cases) {
+    const results = (await index.find({ name: c.name })).results;
+    assert.deepEqual(results.map(s => [s.path, s.kind]), [[c.file, c.kind]], `${c.file} should index ${c.name} as ${c.kind}`);
+  }
+});
+
 test('canonical roots share a private cache, linked worktrees do not', async t => {
   const f = await fixture(t);
   await f.file('sub/source.ts', 'function shared() {}');

@@ -67,7 +67,7 @@ See [the verification checklist](.agents/skills/verify-pi-index/SKILL.md) for in
 
 ## Limits
 
-Ctags support varies by language. Zig is not a built-in Ctags language, so pi-index bundles a regex optlib parser for it (`src/zig.ctags`, covering `fn`, `const`/`var`, `struct`/`enum`/`union`, and `test` blocks); being regex-based it finds definitions without scope, so some function-local declarations also appear. An empty result does not prove a definition is absent. The index does not include unsaved editor buffers, inferred types, a call graph, or semantic search.
+Ctags support varies by language. Universal Ctags already covers most mainstream languages (C/C++, C#, Java, Python, Ruby, Go, Rust, JavaScript, TypeScript, PHP, Kotlin, shell, and more). On top of that, pi-index bundles extra parsers and extension maps in `src/langs/` for popular cases Ctags misses: Zig, Swift, Dart, Scala, Groovy/Gradle, Solidity, Svelte, and Vue, plus `.tsx`/`.mts`/`.cts` as TypeScript, `.cjs` as JavaScript, and `.hcl` as Terraform. The bundled language parsers are regex-based, so they find definitions without scope — some function-local declarations also appear, and nested or multi-line signatures can be missed. An empty result does not prove a definition is absent. The index does not include unsaved editor buffers, inferred types, a call graph, or semantic search.
 
 Content reconciliation costs disk reads. This project does not claim a speedup over text search. A changing checkout is not an atomic filesystem snapshot.
 

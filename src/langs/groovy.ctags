@@ -1,0 +1,14 @@
+# Groovy and Gradle build scripts: not a built-in Universal Ctags language.
+--langdef=Groovy
+--map-Groovy=+.groovy
+--map-Groovy=+.gradle
+--kinddef-Groovy=c,class,classes
+--kinddef-Groovy=i,interface,interfaces
+--kinddef-Groovy=t,trait,traits
+--kinddef-Groovy=g,enum,enums
+--kinddef-Groovy=f,method,methods
+--regex-Groovy=/^[ \t]*([a-zA-Z]+[ \t]+)*class[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\2/c/{exclusive}
+--regex-Groovy=/^[ \t]*([a-zA-Z]+[ \t]+)*interface[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\2/i/{exclusive}
+--regex-Groovy=/^[ \t]*([a-zA-Z]+[ \t]+)*trait[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\2/t/{exclusive}
+--regex-Groovy=/^[ \t]*([a-zA-Z]+[ \t]+)*enum[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)/\2/g/{exclusive}
+--regex-Groovy=/^[ \t]*(def|[A-Za-z_][A-Za-z0-9_<>,. ]*?)[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)[ \t]*\([^;]*\)[ \t]*\{/\2/f/{exclusive}
