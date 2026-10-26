@@ -99,6 +99,24 @@ test('project Ctags configuration is disabled', async t => {
   assert.equal((await f.index().find({ name: 'configured' })).results.length, 1);
 });
 
+test('bundled Zig parser indexes definitions Universal Ctags lacks', async t => {
+  const f = await fixture(t);
+  await f.file('src/app.zig', [
+    'const std = @import("std");',
+    'pub const Mode = enum { fast, slow };',
+    'const Point = packed struct { x: i32 };',
+    'pub fn start(mode: Mode) void {}',
+    '    fn method() void {}',
+    'test "it works" {}',
+  ].join('\n') + '\n');
+  const index = f.index();
+  assert.deepEqual((await index.find({ name: 'start' })).results.map(s => [s.name, s.line, s.kind]), [['start', 4, 'function']]);
+  assert.equal((await index.find({ name: 'Mode' })).results[0]?.kind, 'enum');
+  assert.equal((await index.find({ name: 'Point' })).results[0]?.kind, 'struct');
+  const outline = (await index.outline({ path: 'src/app.zig' })).results.map(s => s.name);
+  assert.deepEqual(outline, ['std', 'Mode', 'Point', 'start', 'method', 'it works']);
+});
+
 test('canonical roots share a private cache, linked worktrees do not', async t => {
   const f = await fixture(t);
   await f.file('sub/source.ts', 'function shared() {}');

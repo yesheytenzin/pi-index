@@ -1,9 +1,10 @@
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { constants } from 'node:fs';
+import { constants, readFileSync } from 'node:fs';
 import { chmod, lstat, mkdir, open, realpath } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { openDatabase } from './sqlite.ts';
 type Database = ReturnType<typeof openDatabase>;
 import { setTimeout as delay } from 'node:timers/promises';
@@ -31,7 +32,13 @@ export type Coverage = {
 type Snapshot = { symbols: SymbolResult[]; coverage: Coverage };
 const MAX_FILE_BYTES = 1024 * 1024;
 const BUSY_MS = 5000;
-const CTAGS_OPTIONS = ['--options=NONE', '--output-format=json', '--fields=+nKlsS', '--sort=no', '-f', '-'];
+// Bundled optlib parsers that Universal Ctags lacks, loaded after --options=NONE so they
+// apply everywhere without reading untrusted project Ctags configuration.
+const OPTLIBS = [fileURLToPath(new URL('./zig.ctags', import.meta.url))];
+// Hashed into the index fingerprint so editing a bundled optlib invalidates stale caches.
+const OPTLIBS_HASH = createHash('sha256').update(OPTLIBS.map(path => readFileSync(path)).join('\0')).digest('hex');
+const CTAGS_BASE = ['--options=NONE', ...OPTLIBS.map(path => `--options=${path}`)];
+const CTAGS_OPTIONS = [...CTAGS_BASE, '--output-format=json', '--fields=+nKlsS', '--sort=no', '-f', '-'];
 const queues = new Map<string, Promise<void>>();
 const emptyCoverage = (): Coverage => ({
   discovered: 0, indexed: 0, changed: 0, unsupported: 0, skipped: [], skipped_total: 0, skipped_truncated: false,
@@ -238,7 +245,7 @@ export class SymbolIndex {
     if (!version.startsWith('Universal Ctags')) throw new Error('Universal Ctags is required. Install Universal Ctags with JSON support and set PI_INDEX_CTAGS/options.ctags.');
     const features = (await this.ctagsRun(['--options=NONE', '--list-features'], root, signal)).toString('utf8');
     if (!/^json(?:\s|$)/m.test(features)) throw new Error('Universal Ctags lacks JSON support. Install a JSON-enabled build and set PI_INDEX_CTAGS/options.ctags.');
-    const fingerprint = createHash('sha256').update(JSON.stringify([2, this.ctags, version, features, CTAGS_OPTIONS])).digest('hex');
+    const fingerprint = createHash('sha256').update(JSON.stringify([3, this.ctags, version, features, CTAGS_OPTIONS, OPTLIBS_HASH])).digest('hex');
     const force = rebuild || db.prepare('SELECT value FROM metadata WHERE key = ?').get('fingerprint')?.value !== fingerprint;
     const list = async (args: string[]) => {
       const buffer = await run('git', ['-c', 'core.quotepath=false', 'ls-files', '-z', ...args], root, signal);
@@ -267,7 +274,7 @@ export class SymbolIndex {
     const languages = new Map<string, string>();
     for (let offset = 0; offset < changed.length; offset += 64) {
       const batch = changed.slice(offset, offset + 64);
-      let output = (await this.ctagsRun(['--options=NONE', '--print-language', ...batch.map(path => resolve(root, path))], root, signal)).toString('utf8');
+      let output = (await this.ctagsRun([...CTAGS_BASE, '--print-language', ...batch.map(path => resolve(root, path))], root, signal)).toString('utf8');
       for (const path of batch) {
         const prefix = `${resolve(root, path)}: `;
         // Ctags omits a line entirely for some inputs (for example .gitignore); a missing line means no detected language.
