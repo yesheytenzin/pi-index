@@ -1,6 +1,41 @@
 import { Type } from "@earendil-works/pi-ai";
 import { defineTool, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { SymbolIndex } from "./indexer.ts";
+import { SymbolIndex, type Coverage } from "./indexer.ts";
+
+// Group a reason's skipped paths: unsupported files roll up by extension (one ".zig ×41"
+// line beats 41 paths), everything else lists a few example paths.
+function describeSkips(reason: string, paths: string[]): string {
+  if (reason === "unsupported-language") {
+    const byExtension = new Map<string, number>();
+    for (const path of paths) {
+      const base = path.slice(path.lastIndexOf("/") + 1);
+      const dot = base.lastIndexOf(".");
+      const key = dot > 0 ? base.slice(dot) : "(no extension)";
+      byExtension.set(key, (byExtension.get(key) ?? 0) + 1);
+    }
+    return [...byExtension].sort((a, b) => b[1] - a[1]).map(([ext, n]) => `${ext} ×${n}`).join(", ");
+  }
+  const shown = paths.slice(0, 5).join(", ");
+  return paths.length > 5 ? `${shown}, +${paths.length - 5} more` : shown;
+}
+
+function formatReport(verb: string, value: { root: string; coverage: Coverage; initialized?: boolean }): string {
+  if (value.initialized === false) return `${value.root}\nNo index built yet — run /index rebuild to create it.`;
+  const c = value.coverage;
+  const lines = [
+    `${verb} · ${value.root}`,
+    `${c.indexed} of ${c.discovered} files indexed` + (c.unsupported ? ` · ${c.unsupported} unsupported language` : ""),
+  ];
+  if (c.skipped_total) {
+    const groups = new Map<string, string[]>();
+    for (const { path, reason } of c.skipped) groups.set(reason, [...(groups.get(reason) ?? []), path]);
+    lines.push(`Skipped ${c.skipped_total}${c.skipped_truncated ? ` (showing first ${c.skipped.length})` : ""}:`);
+    for (const [reason, paths] of [...groups].sort((a, b) => b[1].length - a[1].length)) {
+      lines.push(`  ${reason} (${paths.length}): ${describeSkips(reason, paths)}`);
+    }
+  }
+  return lines.join("\n");
+}
 
 const outputSchema = Type.Object({
   root: Type.String(),
@@ -75,8 +110,9 @@ export default function (pi: ExtensionAPI) {
         const value = action === "rebuild"
           ? await index(ctx.cwd).rebuild()
           : await index(ctx.cwd).status();
-        if (ctx.hasUI) ctx.ui.notify(JSON.stringify(value, null, 2), "info");
-        else pi.sendMessage({ customType: "pi-index-status", content: JSON.stringify(value, null, 2), display: true });
+        const report = formatReport(action === "rebuild" ? "Index rebuilt" : "Index status", value);
+        if (ctx.hasUI) ctx.ui.notify(report, "info");
+        else pi.sendMessage({ customType: "pi-index-status", content: report, display: true });
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         if (ctx.hasUI) ctx.ui.notify(message, "error");
